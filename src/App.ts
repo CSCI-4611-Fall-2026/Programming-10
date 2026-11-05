@@ -6,9 +6,12 @@
 
 import * as gfx from 'gophergfx'
 
+import { RobotArm } from './RobotArm';
+
 export class App extends gfx.GfxApp
 {
     private cameraControls: gfx.OrbitControls;
+    private robotArm: RobotArm;
 
     // --- Create the App class ---
     constructor()
@@ -17,6 +20,8 @@ export class App extends gfx.GfxApp
         super();
 
         this.cameraControls = new gfx.OrbitControls(this.camera);
+
+        this.robotArm = new RobotArm();
     }
 
 
@@ -40,9 +45,47 @@ export class App extends gfx.GfxApp
         directionalLight.position.set(2, 1, 3)
         this.scene.add(directionalLight);
 
-        // Create a small axes helper at the origin
-        const axes = gfx.Geometry3Factory.createAxes(0.1);
-        this.scene.add(axes);
+        const gridSize = 12;
+        const gridVertices: gfx.Vector3[] = [];
+        const gridColors: gfx.Color[] = [];
+
+        const gridColor1 = new gfx.Color(0.75, 0.75, 0.75);
+        const gridColor2 = new gfx.Color(0.25, 0.25, 0.25);
+
+        for(let i=-gridSize/2; i <= gridSize/2; i++)
+        {
+            gridVertices.push(new gfx.Vector3(-gridSize/2, 0, i));
+            gridVertices.push(new gfx.Vector3(gridSize/2, 0, i));
+            gridVertices.push(new gfx.Vector3(i, 0, -gridSize/2));
+            gridVertices.push(new gfx.Vector3(i, 0, gridSize/2));
+
+            if(i % 2 == 0)
+                gridColors.push(gridColor1, gridColor1, gridColor1, gridColor1);
+            else
+                gridColors.push(gridColor2, gridColor2, gridColor2, gridColor2);
+        }
+
+        const gridLines = new gfx.Line3(gfx.LineMode3.LINES);
+        gridLines.setVertices(gridVertices);
+        gridLines.setColors(gridColors);
+        this.scene.add(gridLines);
+
+        this.robotArm.showAxes = true;
+        this.robotArm.createHierarchy();
+        this.robotArm.createGeometry();
+        this.scene.add(this.robotArm);
+
+        this.robotArm.bones.get("upperArm")!.rotation.setRotationZ(
+            gfx.MathUtils.degreesToRadians(-10)
+        );
+
+        this.robotArm.bones.get("middleArm")!.rotation.setRotationZ(
+            gfx.MathUtils.degreesToRadians(-30)
+        );
+
+        this.robotArm.bones.get("lowerArm")!.rotation.setRotationZ(
+            gfx.MathUtils.degreesToRadians(-45)
+        );
     }
 
     
